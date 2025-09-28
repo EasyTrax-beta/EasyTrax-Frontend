@@ -22,10 +22,24 @@ class AuthService {
     axios.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
-          await this.refreshToken();
-          return axios.request(error.config);
+        if (!error.config) {
+          return Promise.reject(error);
         }
+
+        const originalRequest = error.config as typeof error.config & { __isRetryRequest?: boolean };
+        const { response } = error;
+        const isAuthEndpoint =
+          originalRequest.url &&
+          [API_ENDPOINTS.AUTH.REISSUE, API_ENDPOINTS.AUTH.LOGOUT].some((endpoint) =>
+            originalRequest.url.includes(endpoint)
+          );
+
+        if (response?.status === 401 && !isAuthEndpoint && !originalRequest.__isRetryRequest) {
+          originalRequest.__isRetryRequest = true;
+          await this.refreshToken();
+          return axios.request(originalRequest);
+        }
+
         return Promise.reject(error);
       }
     );
@@ -44,6 +58,10 @@ class AuthService {
 
   async loginWithKakao(): Promise<void> {
     this.initKakao();
+
+    if (!window.Kakao || !window.Kakao.Auth) {
+      throw new Error('Kakao SDK가 초기화되지 않았습니다.');
+    }
     
     // OIDC 로그인 사용 (리다이렉트 방식)
     window.Kakao.Auth.authorize({

@@ -48,7 +48,7 @@ const STEPS_DATA = [
   }
 ];
 
-const FeatureSteps: React.FC = memo(() => {
+const FeatureStepsComponent: React.FC = () => {
   return (
     <section 
       className="bg-slate-900 py-20 relative"
@@ -90,7 +90,9 @@ const FeatureSteps: React.FC = memo(() => {
       </div>
     </section>
   );
-});
+};
+
+const FeatureSteps = memo(FeatureStepsComponent);
 
 FeatureSteps.displayName = 'FeatureSteps';
 

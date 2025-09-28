@@ -4,12 +4,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'kakao' | 'default';
   size?: 'small' | 'medium' | 'large';
-  onClick?: () => void;
-  disabled?: boolean;
   className?: string;
 }
 
-const Button: React.FC<ButtonProps> = memo(({ 
+const ButtonComponent: React.FC<ButtonProps> = ({ 
   children, 
   variant = 'default', 
   size = 'medium', 
@@ -45,7 +43,9 @@ const Button: React.FC<ButtonProps> = memo(({
       {children}
     </button>
   );
-});
+};
+
+const Button = memo(ButtonComponent);
 
 Button.displayName = 'Button';
 

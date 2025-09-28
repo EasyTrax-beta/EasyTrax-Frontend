@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import Button from '../atoms/Button';
 
-const Hero: React.FC = memo(() => {
+const HeroComponent: React.FC = () => {
   return (
     <section 
       className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 relative flex items-center overflow-hidden"
@@ -71,7 +71,9 @@ const Hero: React.FC = memo(() => {
       </div>
     </section>
   );
-});
+};
+
+const Hero = memo(HeroComponent);
 
 Hero.displayName = 'Hero';
 

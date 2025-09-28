@@ -2,7 +2,7 @@ import React, { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginButton from '../molecules/LoginButton';
 
-const Header: React.FC = memo(() => {
+const HeaderComponent: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogoClick = useCallback(() => {
@@ -81,7 +81,9 @@ const Header: React.FC = memo(() => {
       </div>
     </header>
   );
-});
+};
+
+const Header = memo(HeaderComponent);
 
 Header.displayName = 'Header';
 

@@ -16,7 +16,7 @@ interface StepCardProps {
   };
 }
 
-const StepNumber: React.FC<StepNumberProps> = memo(({ number, children }) => {
+const StepNumberComponent: React.FC<StepNumberProps> = ({ number, children }) => {
   const bgColors = {
     1: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
     2: 'bg-gradient-to-br from-indigo-500 to-indigo-600', 
@@ -32,11 +32,12 @@ const StepNumber: React.FC<StepNumberProps> = memo(({ number, children }) => {
       {children}
     </div>
   );
-});
+};
 
+const StepNumber = memo(StepNumberComponent);
 StepNumber.displayName = 'StepNumber';
 
-const StepCard: React.FC<StepCardProps> = memo(({ 
+const StepCardComponent: React.FC<StepCardProps> = ({ 
   number, 
   title, 
   description, 
@@ -110,7 +111,9 @@ const StepCard: React.FC<StepCardProps> = memo(({
       </div>
     </article>
   );
-});
+};
+
+const StepCard = memo(StepCardComponent);
 
 StepCard.displayName = 'StepCard';
 

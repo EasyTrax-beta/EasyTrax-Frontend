@@ -3,7 +3,7 @@ import Header from '../components/organisms/Header';
 import Hero from '../components/organisms/Hero';
 import FeatureSteps from '../components/organisms/FeatureSteps';
 
-const HomePage: React.FC = memo(() => {
+const HomePageComponent: React.FC = () => {
   return (
     <>
       <Header />
@@ -11,7 +11,9 @@ const HomePage: React.FC = memo(() => {
       <FeatureSteps />
     </>
   );
-});
+};
+
+const HomePage = memo(HomePageComponent);
 
 HomePage.displayName = 'HomePage';
 

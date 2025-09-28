@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 
-const InfoPanel: React.FC = memo(() => {
+const InfoPanelComponent: React.FC = () => {
   return (
     <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-6 max-w-2xl mx-auto">
       <div className="flex items-center gap-3 mb-5">
@@ -68,7 +68,9 @@ const InfoPanel: React.FC = memo(() => {
       </div>
     </div>
   );
-});
+};
+
+const InfoPanel = memo(InfoPanelComponent);
 
 InfoPanel.displayName = 'InfoPanel';
 
