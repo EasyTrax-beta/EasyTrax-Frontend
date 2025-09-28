@@ -16,13 +16,25 @@ class AuthService {
       const token = localStorage.getItem('accessToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log(`API 요청: ${config.method?.toUpperCase()} ${config.url} (토큰: ${token.substring(0, 20)}...)`);
+      } else {
+        console.log(`API 요청: ${config.method?.toUpperCase()} ${config.url} (토큰 없음)`);
       }
       return config;
     });
 
     axios.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        console.log(`API 응답 성공: ${response.config.method?.toUpperCase()} ${response.config.url} (${response.status})`);
+        return response;
+      },
       async (error) => {
+        console.error(`API 응답 오류: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+
         if (!error.config) {
           return Promise.reject(error);
         }
@@ -31,11 +43,12 @@ class AuthService {
         const { response } = error;
         const isAuthEndpoint =
           originalRequest.url &&
-          [API_ENDPOINTS.AUTH.REISSUE, API_ENDPOINTS.AUTH.LOGOUT].some((endpoint) =>
+          [API_ENDPOINTS.AUTH.REISSUE, API_ENDPOINTS.AUTH.LOGOUT, API_ENDPOINTS.AUTH.LOGIN].some((endpoint) =>
             originalRequest.url.includes(endpoint)
           );
 
         if (response?.status === 401 && !isAuthEndpoint && !originalRequest.__isRetryRequest) {
+          console.log('401 오류 감지, 토큰 재발급 시도');
           originalRequest.__isRetryRequest = true;
 
           if (!this.refreshPromise) {
@@ -44,8 +57,14 @@ class AuthService {
             });
           }
 
-          await this.refreshPromise;
-          return axios.request(originalRequest);
+          try {
+            await this.refreshPromise;
+            console.log('토큰 재발급 성공, 원래 요청 재시도');
+            return axios.request(originalRequest);
+          } catch (refreshError) {
+            console.error('토큰 재발급 실패:', refreshError);
+            return Promise.reject(error);
+          }
         }
 
         return Promise.reject(error);
@@ -96,28 +115,48 @@ class AuthService {
       });
 
       const tokenData = await tokenResponse.json();
+      console.log('카카오 토큰 응답:', tokenData);
+      
+      if (!tokenResponse.ok) {
+        throw new Error(`카카오 토큰 요청 실패: ${tokenData.error_description || tokenData.error || 'Unknown error'}`);
+      }
       
       if (!tokenData.id_token) {
-        throw new Error('ID 토큰을 받지 못했습니다.');
+        console.log('받은 토큰 데이터:', tokenData);
+        throw new Error('ID 토큰을 받지 못했습니다. OpenID Connect 스코프가 필요합니다.');
       }
 
+      console.log('백엔드 로그인 시도 - ID Token:', tokenData.id_token);
+
       // 백엔드 로그인 처리
-      const response = await axios.post(`${this.baseURL}${API_ENDPOINTS.AUTH.LOGIN}`, null, {
+      const response = await axios.post(`${this.baseURL}${API_ENDPOINTS.AUTH.LOGIN}`, {}, {
         headers: {
+          'Content-Type': 'application/json',
           'id_token': tokenData.id_token
         }
       });
+
+      console.log('백엔드 로그인 응답:', response.data);
 
       if (response.data.success) {
         const { accessToken, refreshToken } = response.data.data;
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
+        console.log('토큰 저장 완료:', { accessToken: accessToken.substring(0, 20) + '...', refreshToken: refreshToken.substring(0, 20) + '...' });
         return response.data;
       } else {
         throw new Error(response.data.message);
       }
     } catch (error) {
       console.error('OIDC callback error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          headers: error.response?.headers
+        });
+      }
       throw error;
     }
   }
@@ -142,6 +181,17 @@ class AuthService {
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = localStorage.getItem('refreshToken');
 
+      console.log('토큰 재발급 시도:', {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken,
+        accessTokenPreview: accessToken?.substring(0, 20) + '...',
+        refreshTokenPreview: refreshToken?.substring(0, 20) + '...'
+      });
+
+      if (!accessToken || !refreshToken) {
+        throw new Error('토큰이 없습니다');
+      }
+
       const response = await axios.post(`${this.baseURL}${API_ENDPOINTS.AUTH.REISSUE}`, null, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -149,13 +199,22 @@ class AuthService {
         }
       });
 
+      console.log('토큰 재발급 응답:', response.data);
+
       if (response.data.success) {
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
         localStorage.setItem('accessToken', newAccessToken);
         localStorage.setItem('refreshToken', newRefreshToken);
+        console.log('새 토큰 저장 완료:', {
+          newAccessTokenPreview: newAccessToken.substring(0, 20) + '...',
+          newRefreshTokenPreview: newRefreshToken.substring(0, 20) + '...'
+        });
         return response.data;
+      } else {
+        throw new Error(response.data.message || '토큰 재발급 실패');
       }
     } catch (error) {
+      console.error('토큰 재발급 오류:', error);
       await this.logout();
       throw error;
     }
