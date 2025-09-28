@@ -4,6 +4,7 @@ import type { ApiResponse, LoginResponse, UserInfo } from '../types';
 
 class AuthService {
   private baseURL: string;
+  private refreshPromise: Promise<ApiResponse<LoginResponse> | undefined> | null = null;
 
   constructor() {
     this.baseURL = API_BASE_URL;
@@ -36,7 +37,14 @@ class AuthService {
 
         if (response?.status === 401 && !isAuthEndpoint && !originalRequest.__isRetryRequest) {
           originalRequest.__isRetryRequest = true;
-          await this.refreshToken();
+
+          if (!this.refreshPromise) {
+            this.refreshPromise = this.refreshToken().finally(() => {
+              this.refreshPromise = null;
+            });
+          }
+
+          await this.refreshPromise;
           return axios.request(originalRequest);
         }
 
@@ -45,21 +53,22 @@ class AuthService {
     );
   }
 
-  private initKakao(): void {
+  private initKakao(): boolean {
     if (!window.Kakao) {
       console.error('Kakao SDK not loaded');
-      return;
+      return false;
     }
     
     if (!window.Kakao.isInitialized()) {
       window.Kakao.init(KAKAO_CONFIG.CLIENT_ID);
     }
+    return true;
   }
 
   async loginWithKakao(): Promise<void> {
-    this.initKakao();
-
-    if (!window.Kakao || !window.Kakao.Auth) {
+    const isInitialized = this.initKakao();
+    
+    if (!isInitialized || !window.Kakao || !window.Kakao.Auth) {
       throw new Error('Kakao SDK가 초기화되지 않았습니다.');
     }
     
@@ -147,7 +156,7 @@ class AuthService {
         return response.data;
       }
     } catch (error) {
-      this.logout();
+      await this.logout();
       throw error;
     }
   }

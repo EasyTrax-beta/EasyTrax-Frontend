@@ -105,7 +105,7 @@ const StepCardComponent: React.FC<StepCardProps> = ({
             {infoIcon[infoBox.type]}
           </span>
         </div>
-        <p className="text-xs text-white/80 m-0">
+        <p className="text-xs m-0">
           {infoBox.text}
         </p>
       </div>

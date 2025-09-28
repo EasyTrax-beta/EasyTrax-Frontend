@@ -17,11 +17,16 @@ KakaoIcon.displayName = 'KakaoIcon';
 const LoginButtonComponent: React.FC = () => {
   const { login, logout, isAuthenticated, isLoading, user } = useAuth();
 
-  const handleClick = useCallback(() => {
-    if (isAuthenticated) {
-      logout();
-    } else {
-      login();
+  const handleClick = useCallback(async () => {
+    try {
+      if (isAuthenticated) {
+        await logout();
+      } else {
+        await login();
+      }
+    } catch (error) {
+      // useAuth가 에러 상태를 관리하므로 추가 처리가 필요하다면 여기서 수행
+      console.error(error);
     }
   }, [isAuthenticated, login, logout]);
 
