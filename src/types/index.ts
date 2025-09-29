@@ -44,6 +44,40 @@ export interface Project {
   updatedAt: string;
 }
 
+export interface ProjectCreateRequest {
+  projectName: string;
+  productName: string;
+  targetCountry: Country;
+  description?: string;
+  expectedCompletionDate?: string;
+  priority: Priority;
+}
+
+export interface ProjectUpdateRequest {
+  projectName?: string;
+  productName?: string;
+  targetCountry?: Country;
+  description?: string;
+  expectedCompletionDate?: string;
+  priority?: Priority;
+}
+
+export interface ProjectListResponse {
+  content: Project[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+export interface ProjectStatusUpdateRequest {
+  status: ProjectStatus;
+}
+
+export interface ProjectProgressUpdateRequest {
+  progressPercentage: number;
+}
+
 import React from 'react';
 
 // Component Props Types

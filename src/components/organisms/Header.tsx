@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import LoginButton from '../molecules/LoginButton';
 
 const HeaderComponent: React.FC = () => {
@@ -67,14 +67,13 @@ const HeaderComponent: React.FC = () => {
           >
             라벨/서류 분석
           </a>
-          <a 
-            className="text-white/80 font-medium transition-colors hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 rounded px-2 py-1 cursor-pointer"
-            tabIndex={0}
-            role="button"
+          <Link 
+            to="/projects"
+            className="text-white/80 font-medium transition-colors hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 rounded px-2 py-1"
             aria-label="프로젝트 관리 서비스"
           >
             프로젝트 관리
-          </a>
+          </Link>
         </nav>
         
         <LoginButton />
