@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Project } from '../types';
 import { projectService } from '../services/project';
@@ -11,7 +11,7 @@ const ProjectDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     if (!id) {
       setError('프로젝트 ID가 없습니다.');
       setLoading(false);
@@ -49,11 +49,11 @@ const ProjectDetailPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchProject();
-  }, [id]);
+  }, [fetchProject]);
 
   const handleDelete = async () => {
     if (!project || !window.confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) return;

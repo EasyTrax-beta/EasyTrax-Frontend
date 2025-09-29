@@ -102,7 +102,7 @@ const ProjectCreatePage: React.FC = () => {
         setTimeout(() => navigate('/'), 2000);
       } else if (err.response?.status === 400) {
         setError(err.response?.data?.message || '입력값이 올바르지 않습니다.');
-      } else if (err.code === 'NETWORK_ERROR' || err.message?.includes('Network Error')) {
+      } else if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
         setError('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
       } else {
         setError(err.response?.data?.message || '프로젝트 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');

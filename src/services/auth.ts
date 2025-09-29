@@ -16,7 +16,7 @@ class AuthService {
       const token = localStorage.getItem('accessToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log(`API 요청: ${config.method?.toUpperCase()} ${config.url} (토큰: ${token.substring(0, 20)}...)`);
+        console.debug(`API 요청: ${config.method?.toUpperCase()} ${config.url}`, { authenticated: true });
       } else {
         console.log(`API 요청: ${config.method?.toUpperCase()} ${config.url} (토큰 없음)`);
       }
@@ -115,18 +115,18 @@ class AuthService {
       });
 
       const tokenData = await tokenResponse.json();
-      console.log('카카오 토큰 응답:', tokenData);
+      console.debug('카카오 토큰 응답 수신', { hasIdToken: !!tokenData.id_token });
       
       if (!tokenResponse.ok) {
         throw new Error(`카카오 토큰 요청 실패: ${tokenData.error_description || tokenData.error || 'Unknown error'}`);
       }
       
       if (!tokenData.id_token) {
-        console.log('받은 토큰 데이터:', tokenData);
+        console.warn('ID 토큰이 비어 있습니다.', { hasIdToken: false, error: tokenData.error });
         throw new Error('ID 토큰을 받지 못했습니다. OpenID Connect 스코프가 필요합니다.');
       }
 
-      console.log('백엔드 로그인 시도 - ID Token:', tokenData.id_token);
+      console.debug('백엔드 로그인 시도');
 
       // 백엔드 로그인 처리
       const response = await axios.post(`${this.baseURL}${API_ENDPOINTS.AUTH.LOGIN}`, {}, {
@@ -136,13 +136,13 @@ class AuthService {
         }
       });
 
-      console.log('백엔드 로그인 응답:', response.data);
+      console.debug('백엔드 로그인 응답 수신');
 
       if (response.data.success) {
         const { accessToken, refreshToken } = response.data.data;
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-        console.log('토큰 저장 완료:', { accessToken: accessToken.substring(0, 20) + '...', refreshToken: refreshToken.substring(0, 20) + '...' });
+        console.debug('토큰 저장 완료');
         return response.data;
       } else {
         throw new Error(response.data.message);
@@ -181,11 +181,9 @@ class AuthService {
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = localStorage.getItem('refreshToken');
 
-      console.log('토큰 재발급 시도:', {
+      console.debug('토큰 재발급 시도', {
         hasAccessToken: !!accessToken,
-        hasRefreshToken: !!refreshToken,
-        accessTokenPreview: accessToken?.substring(0, 20) + '...',
-        refreshTokenPreview: refreshToken?.substring(0, 20) + '...'
+        hasRefreshToken: !!refreshToken
       });
 
       if (!accessToken || !refreshToken) {
@@ -199,16 +197,13 @@ class AuthService {
         }
       });
 
-      console.log('토큰 재발급 응답:', response.data);
+      console.debug('토큰 재발급 응답 수신');
 
       if (response.data.success) {
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
         localStorage.setItem('accessToken', newAccessToken);
         localStorage.setItem('refreshToken', newRefreshToken);
-        console.log('새 토큰 저장 완료:', {
-          newAccessTokenPreview: newAccessToken.substring(0, 20) + '...',
-          newRefreshTokenPreview: newRefreshToken.substring(0, 20) + '...'
-        });
+        console.debug('새 토큰 저장 완료');
         return response.data;
       } else {
         throw new Error(response.data.message || '토큰 재발급 실패');

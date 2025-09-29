@@ -62,7 +62,7 @@ const ProjectsPage: React.FC = () => {
         setError('접근 권한이 없습니다. 관리자에게 문의하거나 다시 로그인해주세요.');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-      } else if (err.code === 'NETWORK_ERROR' || err.message?.includes('Network Error')) {
+      } else if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
         setError('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
       } else {
         setError(err.response?.data?.message || '프로젝트 목록을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.');
