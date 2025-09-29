@@ -37,8 +37,8 @@ const ProjectsPage: React.FC = () => {
         page,
         size: pageSize,
         sort: sortOption,
-        ...(statusFilter && { status: statusFilter }),
-        ...(priorityFilter && { priority: priorityFilter })
+        ...(statusFilter ? { status: statusFilter } : {}),
+        ...(priorityFilter ? { priority: priorityFilter } : {})
       };
       
       const response = await projectService.getProjects(params);
